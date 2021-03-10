@@ -96,8 +96,6 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
   const { id } = request.params;
 
-  const { done } = request.body;
-
   const { user } = request;
 
   const todos = user.todos;
