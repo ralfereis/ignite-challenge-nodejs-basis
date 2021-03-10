@@ -24,6 +24,24 @@ function checksExistsUserAccount(request, response, next) {
   return next();
 }
 
+function checkExistsUserTodo(request, response, next) {
+  const { id } = request.params
+
+  const { user } = request;
+
+  const todos = user.todos;
+
+  const todo = todos.find(todo => todo.id === id);
+
+  if (!todo) {
+    return response.status(404).json({ error: 'Todo not found.'});
+  }
+
+  request.todo = todo;
+
+  return next();
+}
+
 app.post('/users', (request, response) => {
   const {name, username } = request.body;
 
@@ -72,20 +90,11 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
 
 });
 
-app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
-  const { id } = request.params;
+app.put('/todos/:id', checksExistsUserAccount, checkExistsUserTodo, (request, response) => {  
 
   const { title, deadline } = request.body;
 
-  const { user } = request;
-  
-  const todos = user.todos;
-
-  const todo = todos.find(todo => todo.id === id );
-
-  if (!todo) {
-    return response.status(404).json({ error: 'Todo not found'});
-  }
+  const { todo } = request;
 
   todo.title = title;
   todo.deadline = deadline;
@@ -93,40 +102,21 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
   return response.status(201).json(todo);
 });
 
-app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
-  const { id } = request.params;
-
-  const { user } = request;
-
-  const todos = user.todos;
-  
-  const todo = todos.find(todo => todo.id === id)
-
-  if (!todo) {
-    return response.status(404).json({ error: 'Todo not found'});
-  }
+app.patch('/todos/:id/done', checksExistsUserAccount, checkExistsUserTodo, (request, response) => {
+  const { todo } = request;
   
   todo.done = true;
 
   return response.status(201).send(todo);
 });
 
-app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
-  const { id } = request.params;
+app.delete('/todos/:id', checksExistsUserAccount, checkExistsUserTodo,  (request, response) => {
 
-  const { user } = request;
+  const { user, todo } = request;  
 
-  const todos = user.todos;
-  
-  const todo = todos.find(todo => todo.id === id)
+  user.todos.splice(todo.id, 1);
 
-  if (!todo) {
-    return response.status(404).json({ error: 'Todo not found.'});
-  }
-
-  todos.splice(todo.id, 1);
-
-  return response.status(204).json(todos);
+  return response.status(204).json(user.todos);
 });
 
 module.exports = app;
