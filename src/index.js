@@ -23,7 +23,6 @@ function checksExistsUserAccount(request, response, next) {
 
   return next();
 }
-
 function checkExistsUserTodo(request, response, next) {
   const { id } = request.params
 
@@ -45,6 +44,7 @@ function checkExistsUserTodo(request, response, next) {
 app.post('/users', (request, response) => {
   const {name, username } = request.body;
 
+
   const usernameAlreadyExists = users.some((users) => users.username === username);
 
   if (usernameAlreadyExists) {
@@ -57,16 +57,14 @@ app.post('/users', (request, response) => {
     username,
     todos: [],
   }
-
   users.push(user);
-
-  return response.status(201).send(user);
   
+  return response.status(201).send(user);
 });
 
 app.get('/todos', checksExistsUserAccount, (request, response) => {
   const { user } = request;
-
+  
   return response.json(user.todos);
   
 });
@@ -116,7 +114,7 @@ app.delete('/todos/:id', checksExistsUserAccount, checkExistsUserTodo,  (request
 
   user.todos.splice(todo.id, 1);
 
-  return response.status(204).json(user.todos);
+  return response.status(204).send();
 });
 
 module.exports = app;
